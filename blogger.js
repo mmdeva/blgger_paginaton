@@ -5,7 +5,7 @@ var totalPosts = 0;
 
 function fetchTotalPosts() {
     $.ajax({
-        url: blogURL + "/feeds/posts/summary?alt=json&max-results=0",
+        url: blogURL + "/feeds/posts/summary?alt=json&max-results=0?orderby=published",
         dataType: "jsonp",
         success: function (data) {
             totalPosts = data.feed.openSearch$totalResults.$t;
