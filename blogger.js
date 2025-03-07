@@ -96,4 +96,6 @@ $(document).ready(function () {
     $("#loading").show(); // Show spinner at start
     $("#post-container").hide();
     fetchTotalPosts();
+    $("#loading").hide(); // Show spinner at start
+    $("#post-container").show();
 });
