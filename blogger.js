@@ -1,11 +1,11 @@
-var blogURL = "https://dataentrybangla.blogspot.com"; // ????? ?????? URL
-var perPage = 7; // ????? ???? ??? ?????
+var blogURL = "https://dataentrybangla.blogspot.com"; 
+var perPage = 7;
 var currentPage = 1;
 var totalPosts = 0;
 
 function fetchTotalPosts() {
     $.ajax({
-        url: blogURL + "/feeds/posts/summary?alt=json&amp;max-results=0",
+        url: blogURL + "/feeds/posts/summary?alt=json&max-results=0",
         dataType: "jsonp",
         success: function (data) {
             totalPosts = data.feed.openSearch$totalResults.$t;
@@ -17,8 +17,13 @@ function fetchTotalPosts() {
 
 function fetchPosts(page) {
     var startIndex = (page - 1) * perPage + 1;
+
+    // Show loading spinner
+    $("#loading").show();
+    $("#post-container").hide();
+
     $.ajax({
-        url: blogURL + "/feeds/posts/summary?alt=json-in-script&amp;start-index=" + startIndex + "&amp;max-results=" + perPage,
+        url: blogURL + "/feeds/posts/summary?alt=json-in-script&start-index=" + startIndex + "&max-results=" + perPage,
         dataType: "jsonp",
         success: function (data) {
             var postsDiv = $("#post-container");
@@ -30,23 +35,20 @@ function fetchPosts(page) {
                 var link = entry.link.find(l => l.rel === "alternate").href;
                 var content = entry.summary ? entry.summary.$t : "No summary available.";
 
-                // ** ???? ??? ???? ???? ?????? **
                 var image = "https://via.placeholder.com/600x400"; // Default Image
 
                 if (entry.media$thumbnail) {
                     image = entry.media$thumbnail.url.replace("s72-c", "s600"); // Better Image Quality
                 } else if (entry.content) {
-    var contentHTML = entry.content.$t;
+                    var contentHTML = entry.content.$t;
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(contentHTML, "text/html");
+                    var imgTag = doc.querySelector("img");
 
-    // Parse contentHTML using DOMParser
-    var parser = new DOMParser();
-    var doc = parser.parseFromString(contentHTML, "text/html"); // Ensure correct parsing
-    var imgTag = doc.querySelector("img"); // Get the first <img> tag
-
-    if (imgTag) {
-        image = imgTag.getAttribute("src"); // Extract the src attribute safely
-    }
-}
+                    if (imgTag) {
+                        image = imgTag.getAttribute("src");
+                    }
+                }
 
                 var postHTML = `
                     <div class="col-md-4">
@@ -62,6 +64,10 @@ function fetchPosts(page) {
                 
                 postsDiv.append(postHTML);
             });
+
+            // Hide loading spinner and show posts
+            $("#loading").hide();
+            $("#post-container").show();
         }
     });
 }
@@ -86,4 +92,8 @@ function changePage(page) {
 }
 
 // Initial Load
-fetchTotalPosts();
+$(document).ready(function () {
+    $("#loading").show(); // Show spinner at start
+    $("#post-container").hide();
+    fetchTotalPosts();
+});
