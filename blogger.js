@@ -4,7 +4,7 @@ var currentPage = 1;
 var totalPosts = 0;
 var totalPages = 0;
 
-// Detect if the current page is a static page
+// Auto-detect if it's a Page or Post
 var isPage = window.location.pathname.includes("/p/");
 var feedType = isPage ? "pages" : "posts";
 
