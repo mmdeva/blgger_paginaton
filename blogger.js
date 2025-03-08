@@ -5,8 +5,8 @@ var totalPosts = 0;
 var totalPages = 0;
 
 // Auto-detect if it's a Page or Post
-var isPage = window.location.pathname.includes("/p/");
-var feedType = isPage ? "pages" : "posts";
+var isStaticPage = window.location.pathname.includes("/p/");
+var feedType = isStaticPage ? "pages" : "posts";
 
 // Fetch total count for pagination
 function fetchTotalPosts() {
