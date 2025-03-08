@@ -2,20 +2,28 @@ var blogURL = "https://dataentrybangla.blogspot.com";
 var perPage = 7;
 var currentPage = 1;
 var totalPosts = 0;
+var totalPages = 0;
 
+// Detect if the current page is a static page
+var isPage = window.location.pathname.includes("/p/");
+var feedType = isPage ? "pages" : "posts";
+
+// Fetch total count for pagination
 function fetchTotalPosts() {
     $.ajax({
-        url: blogURL + "/feeds/posts/summary?alt=json&max-results=0?orderby=published",
+        url: `${blogURL}/feeds/${feedType}/summary?alt=json&max-results=0&orderby=published`,
         dataType: "jsonp",
         success: function (data) {
             totalPosts = data.feed.openSearch$totalResults.$t;
+            totalPages = Math.ceil(totalPosts / perPage);
             renderPagination();
             fetchPosts(currentPage);
         }
     });
 }
 
-function fetchPosts(page) {
+// Fetch Posts or Pages dynamically
+function fetchPosts(page, fallback = false) {
     var startIndex = (page - 1) * perPage + 1;
 
     // Show loading spinner
@@ -23,18 +31,33 @@ function fetchPosts(page) {
     $("#post-container").hide();
 
     $.ajax({
-        url: blogURL + "/feeds/posts/summary?alt=json-in-script&start-index=" + startIndex + "&max-results=" + perPage,
+        url: `${blogURL}/feeds/${feedType}/summary?alt=json-in-script&start-index=${startIndex}&max-results=${perPage}`,
         dataType: "jsonp",
         success: function (data) {
             var postsDiv = $("#post-container");
             postsDiv.empty();
             var entries = data.feed.entry || [];
 
+            // If no posts found and it's not a fallback attempt, try fetching pages
+            if (entries.length === 0 && !fallback && feedType === "posts") {
+                feedType = "pages";
+                fetchPosts(page, true);
+                return;
+            }
+
+            // If still no content, show message
+            if (entries.length === 0) {
+                postsDiv.html("<p>No posts or pages found.</p>");
+                $("#loading").hide();
+                $("#post-container").show();
+                return;
+            }
+
+            // Loop through entries and create post/page cards
             entries.forEach(function (entry) {
                 var title = entry.title.$t;
                 var link = entry.link.find(l => l.rel === "alternate").href;
                 var content = entry.summary ? entry.summary.$t : "No summary available.";
-
                 var image = "https://via.placeholder.com/600x400"; // Default Image
 
                 if (entry.media$thumbnail) {
@@ -68,12 +91,17 @@ function fetchPosts(page) {
             // Hide loading spinner and show posts
             $("#loading").hide();
             $("#post-container").show();
+        },
+        error: function () {
+            $("#post-container").html("<p>Failed to load content.</p>");
+            $("#loading").hide();
+            $("#post-container").show();
         }
     });
 }
 
+// Render Pagination
 function renderPagination() {
-    var totalPages = Math.ceil(totalPosts / perPage);
     var paginationDiv = $("#pagination");
     paginationDiv.empty();
 
@@ -85,6 +113,7 @@ function renderPagination() {
     }
 }
 
+// Change Page
 function changePage(page) {
     currentPage = page;
     fetchPosts(page);
@@ -93,9 +122,7 @@ function changePage(page) {
 
 // Initial Load
 $(document).ready(function () {
-    $("#loading").show(); // Show spinner at start
+    $("#loading").show(); 
     $("#post-container").hide();
     fetchTotalPosts();
-    $("#loading").hide(); // Show spinner at start
-    $("#post-container").show();
 });
