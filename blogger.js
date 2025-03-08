@@ -3,10 +3,10 @@ var perPage = 7;
 var currentPage = 1;
 var totalPosts = 0;
 
-// ব্লক করা URL গুলোর লিস্ট
+// ব্লক করা URL গুলোর লিস্ট (সব URL ছোট হাতের অক্ষরে রাখতে হবে)
 var blockedURLs = [
-    "https://dataentrybangla.blogspot.com/2025/03/hidden-post.html",
-    "https://dataentrybangla.blogspot.com/2025/03/seconed-post.html"
+    "https://dataentrybangla.blogspot.com/2025/03/seconed-post.html".toLowerCase(),
+    "https://dataentrybangla.blogspot.com/2025/03/private-article.html".toLowerCase()
 ];
 
 function fetchTotalPosts() {
@@ -36,10 +36,10 @@ function fetchPosts(page) {
                 var linkObj = entry.link.find(l => l.rel === "alternate");
                 if (!linkObj) return;
 
-                var link = linkObj.href;
+                var link = linkObj.href.toLowerCase(); // URL ছোট হাতের অক্ষরে রূপান্তর
 
                 // ব্লক করা URL হলে স্কিপ করুন
-                if (blockedURLs.includes(link)) return;
+                if (blockedURLs.indexOf(link) !== -1) return;
 
                 var content = entry.summary ? entry.summary.$t : "No summary available.";
                 var image = "https://via.placeholder.com/600x400"; // Default Image
