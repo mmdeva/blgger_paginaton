@@ -1,5 +1,5 @@
-var blogURL = "https://dataentrybangla.blogspot.com"; // ????? ?????? URL
-var perPage = 7; // ????? ???? ??? ?????
+var blogURL = "https://dataentrybangla.blogspot.com";
+var perPage = 7;
 var currentPage = 1;
 var totalPosts = 0;
 
@@ -30,39 +30,36 @@ function fetchPosts(page) {
                 var link = entry.link.find(l => l.rel === "alternate").href;
                 var content = entry.summary ? entry.summary.$t : "No summary available.";
 
-                // ** ???? ??? ???? ???? ?????? **
-                var image = "https://via.placeholder.com/600x400"; // Default Image
+                var image = ""; // No default image
 
                 if (entry.media$thumbnail) {
-                    image = entry.media$thumbnail.url.replace("s72-c", "s600"); // Better Image Quality
+                    image = entry.media$thumbnail.url.replace("s72-c", "s600");
                 } else if (entry.content) {
-    var contentHTML = entry.content.$t;
+                    var contentHTML = entry.content.$t;
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(contentHTML, "text/html");
+                    var imgTag = doc.querySelector("img");
 
-    // Parse contentHTML using DOMParser
-    var parser = new DOMParser();
-    var doc = parser.parseFromString(contentHTML, "text/html"); // Ensure correct parsing
-    var imgTag = doc.querySelector("img"); // Get the first <img> tag
-
-    if (imgTag) {
-        image = imgTag.getAttribute("src"); // Extract the src attribute safely
-    }
-}
-
-                var postHTML = `
-                    <div class="col-md-4">
-                        <div class="card mb-3">
-                            <img src="${image}" class="card-img-top" alt="${title}" style="height:200px; object-fit:cover;"/>
-                            <div class="card-body">
-                                <h5 class="card-title"><a href="${link}">${title}</a></h5>
-                                <p class="card-text">${content.substring(0, 100)}...</p>
-                                <a href="${link}" class="btn btn-primary">Read More</a>
-                            </div>
-                        </div>
-                    </div>`;
-                if (image!=="https://via.placeholder.com/600x400") {
-                postsDiv.append(postHTML);
+                    if (imgTag) {
+                        image = imgTag.getAttribute("src");
+                    }
                 }
-                
+
+                // যদি কোনো ইমেজ না থাকে, তাহলে পোস্টটি append হবে না
+                if (image) {
+                    var postHTML = `
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <img src="${image}" class="card-img-top" alt="${title}" style="height:200px; object-fit:cover;"/>
+                                <div class="card-body">
+                                    <h5 class="card-title"><a href="${link}">${title}</a></h5>
+                                    <p class="card-text">${content.substring(0, 100)}...</p>
+                                    <a href="${link}" class="btn btn-primary">Read More</a>
+                                </div>
+                            </div>
+                        </div>`;
+                    postsDiv.append(postHTML);
+                }
             });
         }
     });
