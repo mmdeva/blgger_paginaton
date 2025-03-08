@@ -45,7 +45,7 @@ function fetchPosts(page) {
                     }
                 }
 
-                // যদি কোনো ইমেজ না থাকে, তাহলে পোস্টটি append হবে না
+                // যদি কোনো ইমেজ না থাকে, তাহলে পোস্টটি appen হবে না
                 if (image) {
                     var postHTML = `
                         <div class="col-md-4">
