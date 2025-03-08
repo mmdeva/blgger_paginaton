@@ -4,11 +4,13 @@ var currentPage = 1;
 var totalPosts = 0;
 var totalPages = 0;
 
-// Auto-detect if it's a Page or Post
+// ✅ Auto-detect page type (Static Page, Post, or Index)
 var isStaticPage = window.location.pathname.includes("/p/");
+var isPostPage = window.location.pathname.includes("/");
+
 var feedType = isStaticPage ? "pages" : "posts";
 
-// Fetch total count for pagination
+// ✅ Fetch total posts/pages count
 function fetchTotalPosts() {
     $.ajax({
         url: `${blogURL}/feeds/${feedType}/summary?alt=json&max-results=0&orderby=published`,
@@ -22,8 +24,8 @@ function fetchTotalPosts() {
     });
 }
 
-// Fetch Posts or Pages dynamically
-function fetchPosts(page, fallback = false) {
+// ✅ Fetch Posts or Pages dynamically
+function fetchPosts(page) {
     var startIndex = (page - 1) * perPage + 1;
 
     // Show loading spinner
@@ -38,14 +40,6 @@ function fetchPosts(page, fallback = false) {
             postsDiv.empty();
             var entries = data.feed.entry || [];
 
-            // If no posts found and it's not a fallback attempt, try fetching pages
-            if (entries.length === 0 && !fallback && feedType === "posts") {
-                feedType = "pages";
-                fetchPosts(page, true);
-                return;
-            }
-
-            // If still no content, show message
             if (entries.length === 0) {
                 postsDiv.html("<p>No posts or pages found.</p>");
                 $("#loading").hide();
@@ -53,7 +47,7 @@ function fetchPosts(page, fallback = false) {
                 return;
             }
 
-            // Loop through entries and create post/page cards
+            // ✅ Loop through posts/pages and display them
             entries.forEach(function (entry) {
                 var title = entry.title.$t;
                 var link = entry.link.find(l => l.rel === "alternate").href;
@@ -100,7 +94,7 @@ function fetchPosts(page, fallback = false) {
     });
 }
 
-// Render Pagination
+// ✅ Render Pagination
 function renderPagination() {
     var paginationDiv = $("#pagination");
     paginationDiv.empty();
@@ -113,14 +107,14 @@ function renderPagination() {
     }
 }
 
-// Change Page
+// ✅ Change Page
 function changePage(page) {
     currentPage = page;
     fetchPosts(page);
     renderPagination();
 }
 
-// Initial Load
+// ✅ Initial Load
 $(document).ready(function () {
     $("#loading").show(); 
     $("#post-container").hide();
