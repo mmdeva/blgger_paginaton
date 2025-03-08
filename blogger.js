@@ -1,11 +1,17 @@
-var blogURL = "https://dataentrybangla.blogspot.com"; // ????? ?????? URL
-var perPage = 7; // ????? ???? ??? ?????
+var blogURL = "https://dataentrybangla.blogspot.com";
+var perPage = 7;
 var currentPage = 1;
 var totalPosts = 0;
 
+// ব্লক করা URL গুলোর লিস্ট
+var blockedURLs = [
+    "https://dataentrybangla.blogspot.com/2025/03/hidden-post.html",
+    "https://dataentrybangla.blogspot.com/2025/03/seconed-post.html"
+];
+
 function fetchTotalPosts() {
     $.ajax({
-        url: blogURL + "/feeds/posts/summary?alt=json&amp;max-results=0",
+        url: blogURL + "/feeds/posts/summary?alt=json&max-results=0",
         dataType: "jsonp",
         success: function (data) {
             totalPosts = data.feed.openSearch$totalResults.$t;
@@ -18,7 +24,7 @@ function fetchTotalPosts() {
 function fetchPosts(page) {
     var startIndex = (page - 1) * perPage + 1;
     $.ajax({
-        url: blogURL + "/feeds/posts/summary?alt=json-in-script&amp;start-index=" + startIndex + "&amp;max-results=" + perPage,
+        url: blogURL + "/feeds/posts/summary?alt=json-in-script&start-index=" + startIndex + "&max-results=" + perPage,
         dataType: "jsonp",
         success: function (data) {
             var postsDiv = $("#post-container");
@@ -27,26 +33,28 @@ function fetchPosts(page) {
 
             entries.forEach(function (entry) {
                 var title = entry.title.$t;
-                var link = entry.link.find(l => l.rel === "alternate").href;
-                var content = entry.summary ? entry.summary.$t : "No summary available.";
+                var linkObj = entry.link.find(l => l.rel === "alternate");
+                if (!linkObj) return;
 
-                // ** ???? ??? ???? ???? ?????? **
+                var link = linkObj.href;
+
+                // ব্লক করা URL হলে স্কিপ করুন
+                if (blockedURLs.includes(link)) return;
+
+                var content = entry.summary ? entry.summary.$t : "No summary available.";
                 var image = "https://via.placeholder.com/600x400"; // Default Image
 
                 if (entry.media$thumbnail) {
-                    image = entry.media$thumbnail.url.replace("s72-c", "s600"); // Better Image Quality
+                    image = entry.media$thumbnail.url.replace("s72-c", "s600");
                 } else if (entry.content) {
-    var contentHTML = entry.content.$t;
-
-    // Parse contentHTML using DOMParser
-    var parser = new DOMParser();
-    var doc = parser.parseFromString(contentHTML, "text/html"); // Ensure correct parsing
-    var imgTag = doc.querySelector("img"); // Get the first <img> tag
-
-    if (imgTag) {
-        image = imgTag.getAttribute("src"); // Extract the src attribute safely
-    }
-}
+                    var contentHTML = entry.content.$t;
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(contentHTML, "text/html");
+                    var imgTag = doc.querySelector("img");
+                    if (imgTag) {
+                        image = imgTag.getAttribute("src");
+                    }
+                }
 
                 var postHTML = `
                     <div class="col-md-4">
